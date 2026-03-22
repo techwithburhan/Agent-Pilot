@@ -1,3 +1,9 @@
+<img width="1470" height="835" alt="Screenshot 2026-03-22 at 1 23 58 PM" src="https://github.com/user-attachments/assets/9e638dcd-0f76-4f6d-bb43-f20a6af988b6" />
+
+
+<img width="1470" height="835" alt="Screenshot 2026-03-22 at 1 18 05 PM" src="https://github.com/user-attachments/assets/7e09b56d-310f-4b9a-a765-b34af103e845" />
+
+
 <div align="center">
 
 # 🤖 Ollama Agent
