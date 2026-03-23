@@ -415,6 +415,16 @@ ollama-agent/
 ❌ Different configs for dev, staging, production → human errors
 ```
 
+## ✅ What Kubernetes Solves
+```code
+✅ App gets high traffic → auto-scales pods automatically
+✅ New version deployed → rolling update with zero downtime
+✅ Container crashes → self-heals and restarts automatically
+✅ Need more capacity → HPA scales up without human intervention
+✅ One server fails → workload moves to healthy nodes
+✅ Configs managed → ConfigMaps and Secrets handle all environments
+```
+
 ## 📋 What Each File Does
 
 | 📄 File                         | 📌 Purpose |
@@ -429,6 +439,197 @@ ollama-agent/
 | `ingress.yaml`                 | Acts as a single entry point and routes traffic to services |
 | `namespace.yaml`               | Creates an isolated Kubernetes namespace for the application |
 | `storageclass.yaml`            | Defines storage provisioning (e.g., AWS EBS volumes) |
+
+## 📋 Why We Used Each Manifest File
+
+## 📋 Why We Used Each Manifest File
+
+### namespace.yaml
+Isolates the entire Ollama Agent application in its own Kubernetes namespace — separating it from other applications running on the same cluster.
+
+```yaml
+# Everything runs under: ollama-agent namespace
+# Instead of polluting the default namespace
+```
+
+---
+
+### deployment.yaml — Frontend & Backend
+Defines how your application runs (image, replicas, updates, resources).
+
+```yaml
+# Runs 2 copies of backend at all times
+# If one crashes → Kubernetes restarts automatically
+# Rolling updates ensure zero downtime
+replicas: 2
+strategy: RollingUpdate
+```
+
+---
+
+### service.yaml — Frontend & Backend
+Provides a stable network endpoint for pods.
+
+```yaml
+# Without Service: Pod IP changes on restart
+# With Service: stable DNS (backend-service:5005)
+```
+
+**Types used:**
+
+| Type | Used For | Access |
+|------|--------|--------|
+| ClusterIP | Backend | Internal |
+| ClusterIP | MongoDB | Internal |
+| LoadBalancer | Frontend | Public |
+
+---
+
+### hpa.yaml — Horizontal Pod Autoscaler
+Auto-scales pods based on traffic.
+
+```yaml
+# Normal: 2 pods
+# Spike: scales up to 10
+# Low traffic: scales down
+minReplicas: 2
+maxReplicas: 10
+targetCPUUtilizationPercentage: 70
+```
+
+---
+
+### configmap.yaml — Frontend & Backend
+Stores non-sensitive configuration.
+
+```yaml
+OLLAMA_API: "http://ollama-service:11434"
+OLLAMA_MODEL: "llama2:latest"
+NODE_ENV: "production"
+```
+
+---
+
+### secret.yaml — Backend
+Stores sensitive credentials securely.
+
+```yaml
+JWT_SECRET: base64_encoded_value
+MONGO_URI: base64_encoded_connection_string
+```
+
+---
+
+### statefulset.yaml — MongoDB
+Used for stateful workloads like databases.
+
+```yaml
+# MongoDB needs stable identity and storage
+# mongodb-0 remains same after restart
+```
+
+---
+
+### persistentvolumeclaim.yaml — MongoDB
+Ensures data persistence.
+
+```yaml
+# Without PVC: data lost on restart
+# With PVC: data stored on AWS EBS
+storage: 10Gi
+storageClassName: aws-ebs
+```
+
+---
+
+### ingress.yaml — Entry Point
+Routes external traffic to services.
+
+```yaml
+# / → frontend
+# /api → backend
+# Single LoadBalancer reduces cost
+```
+
+---
+
+### storageclass.yaml — AWS Storage
+Auto-provisions AWS EBS volumes.
+
+```yaml
+provisioner: ebs.csi.aws.com
+type: gp3
+```
+
+---
+
+## 🔄 How All Files Work Together
+
+```text
+Internet Traffic
+      │
+      ▼
+┌─────────────┐
+│   Ingress   │
+└─────────────┘
+      │
+      ├──── /          ──► Frontend Service
+      │                         │
+      │                    Frontend Pods
+      │                    [HPA Scaling]
+      │
+      └──── /api/      ──► Backend Service
+                                │
+                           Backend Pods
+                           [HPA Scaling]
+                           [ConfigMap + Secret]
+                                │
+                                ▼
+                         MongoDB Service
+                                │
+                         MongoDB Pod
+                                │
+                         Persistent Storage
+```
+
+---
+
+## 🆚 Docker vs Kubernetes
+
+| Feature | Docker | Kubernetes |
+|--------|--------|-----------|
+| Run containers | ✅ | ✅ |
+| Auto-restart | ❌ | ✅ |
+| Auto-scale | ❌ | ✅ |
+| Zero downtime deploy | ❌ | ✅ |
+| Load balancing | ❌ | ✅ |
+| Self-healing | ❌ | ✅ |
+| Best use | Local | Production |
+
+---
+
+## 💡 One Line Summary
+
+```text
+namespace.yaml → Isolated environment
+frontend/deployment.yaml → Run frontend pods
+frontend/service.yaml → Expose frontend
+frontend/hpa.yaml → Auto-scale frontend
+frontend/configmap.yaml → Frontend config
+
+backend/deployment.yaml → Run backend pods
+backend/service.yaml → Backend internal access
+backend/hpa.yaml → Auto-scale backend
+backend/configmap.yaml → Backend config
+backend/secret.yaml → Secure credentials
+
+mongodb/statefulset.yaml → MongoDB deployment
+mongodb/service.yaml → MongoDB access
+mongodb/pvc.yaml → Persistent storage
+
+cluster/ingress.yaml → Traffic routing
+cluster/storageclass.yaml → AWS storage provisioning
+```
 
 ---
 
