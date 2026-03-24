@@ -885,6 +885,10 @@ Internet Traffic
 
 ---
 
+## 🆚 Setup On VM managed it Self 
+
+## 🆚 Setup On AWS EKS managed By AWS  
+
 ## 🆚 Docker vs Kubernetes
 
 | Feature | Docker | Kubernetes |
