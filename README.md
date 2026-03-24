@@ -478,17 +478,6 @@ docker push burhan503/ollama-agent-backend:latest
 - Backend → Node.js API (Port 5005)
 - Docker images are available on DockerHub under burhan503/*
 
-
----
-
-This is now:
-- Clean ✅  
-- Fully English ✅  
-- Ready to paste in README.md ✅  
-- Professional level 🚀  
-
-If you want, next I can add **badges + architecture diagram** to make your repo stand out 🔥
-
 ---
 
 ## ☸️ Kubernetes — Coming Soon
