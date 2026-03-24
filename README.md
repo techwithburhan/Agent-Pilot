@@ -575,6 +575,15 @@ volumes:
   mongo-data:
 ```
 
+### 📁 mongo-init.js (Auto create collections)
+- vim mongo-init.js paste this code 
+```script
+db = db.getSiblingDB("ollama-agent");
+
+db.createCollection("users");
+db.createCollection("chats");
+```
+
 ### Docker Compose Up 
 <img width="2526" height="1174" alt="image" src="https://github.com/user-attachments/assets/55599493-243f-451d-b833-5d725019ecfb" />
 
