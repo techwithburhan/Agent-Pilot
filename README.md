@@ -887,6 +887,29 @@ Internet Traffic
 
 ## 🆚 Setup On VM managed it Self 
 
+### Directory 
+```bash
+Agent-Pilot/k8s/kind-cluster-create
+```
+
+### 🚀 Create KIND Cluster
+```bash
+kind create cluster --name ollama-agent --config kind-config.yml
+```
+### 🔍 Verify Cluster
+```bash
+kubectl cluster-info --context kind-ollama-agent
+```
+### Get Nodes 
+```bash
+kubectl get nodes
+```
+
+
+
+
+
+
 ## 🆚 Setup On AWS EKS managed By AWS  
 
 ## 🆚 Docker vs Kubernetes
