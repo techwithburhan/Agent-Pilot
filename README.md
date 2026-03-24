@@ -676,25 +676,25 @@ ollama-agent/
 ├── frontend/
 ├── backend/
 └── k8s/
-    ├── frontend/
-    │   ├── deployment.yaml
-    │   ├── service.yaml
-    │   ├── hpa.yaml
-    │   └── configmap.yaml
-    ├── backend/
-    │   ├── deployment.yaml
-    │   ├── service.yaml
-    │   ├── hpa.yaml
-    │   ├── configmap.yaml
-    │   └── secret.yaml
-    ├── mongodb/
-    │   ├── statefulset.yaml
-    │   ├── service.yaml
-    │   └── persistentvolumeclaim.yaml
-    └── cluster/
-        ├── namespace.yaml
-        ├── ingress.yaml
-        └── storageclass.yaml
+├── cluster/
+│   ├── namespace.yaml       ✅ ollama-agent namespace
+│   ├── storageclass.yaml    ✅ AWS EBS gp3 storage
+│   └── ingress.yaml         ✅ HTTP routing + SSE support
+├── mongodb/
+│   ├── statefulset.yaml     ✅ MongoDB pod + health checks
+│   ├── service.yaml         ✅ Headless service
+│   └── persistentvolumeclaim.yaml  ✅ 10GB EBS storage
+├── backend/
+│   ├── secret.yaml          ✅ JWT + MongoDB URI base64
+│   ├── configmap.yaml       ✅ Port, Ollama URL, Model
+│   ├── deployment.yaml      ✅ 2 replicas + initContainer
+│   ├── service.yaml         ✅ ClusterIP
+│   └── hpa.yaml             ✅ 2-10 pods auto-scale
+└── frontend/
+    ├── configmap.yaml       ✅ Nginx config + API URL
+    ├── deployment.yaml      ✅ 2 replicas + initContainer
+    ├── service.yaml         ✅ LoadBalancer + 443 HTTPS
+    └── hpa.yaml             ✅ 2-8 pods auto-scale
 
 ```
 ## 🤔 The Problem Without Kubernetes
