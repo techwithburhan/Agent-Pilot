@@ -487,6 +487,21 @@ burhan503/ollama-agent-frontend    latest
 - Backend → Node.js API (Port 5005)
 - Docker images are available on DockerHub under burhan503/*
 
+### 🛑 Stop Running Containers
+
+```bash
+docker stop $(docker ps -q --filter "publish=5005")
+docker stop $(docker ps -q --filter "publish=3000")
+```
+### 🗑️ Remove Docker Images (Single Command)
+```bash
+docker rmi burhan503/ollama-agent-frontend:latest burhan503/ollama-agent-backend:latest
+```
+
+### ⚡ Optional (Force Remove)
+```bash
+docker rmi -f burhan503/ollama-agent-frontend:latest burhan503/ollama-agent-backend:latest
+```
 ---
 
 ## ☸️ Kubernetes — Coming Soon
