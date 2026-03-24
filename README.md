@@ -600,6 +600,33 @@ docker-compose down
 ### Docker Compose Up 
 <img width="2526" height="1174" alt="image" src="https://github.com/user-attachments/assets/55599493-243f-451d-b833-5d725019ecfb" />
 
+### 🐳 Step 1: Enter MongoDB Container
+```bash
+docker exec -it ollama-mongodb mongosh
+```
+### 🗄️ Step 2: Show Databases
+```bash
+show dbs
+```
+### 🗄️ Step 3: 👉 Expected:
+```bash
+admin
+config
+local
+ollama-agent
+```
+### 🗄️ Step 4: 📂 Step 3: Use Your Database
+```bash
+use ollama-agent
+```
+### 🗄️ Step 5: 📑  Show Collections (fields)
+```bash
+show collections
+```
+### ⚡ One-Line Quick Check (Direct)
+```bash
+docker exec -it ollama-mongodb mongosh --eval "use('ollama-agent'); show collections;"
+```
 ### 📦 List all volumes
 ```bash
 docker volume ls
