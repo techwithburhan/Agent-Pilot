@@ -1,2 +1,45 @@
-kind: Deployment
-apiVersion: apps/v1
+apiVersion: apps/v1               # Kubernetes API version for Deployment
+kind: Deployment                 # Resource type → manages Pods
+
+metadata:
+  name: ollama-frontend          # Name of the Deployment
+  namespace: ollama-agent        # Namespace where it will run
+  labels:
+    app: ollama-frontend         # Label used for identification
+
+spec:
+  replicas: 1                    # Number of Pods to run (scaling)
+
+  selector:
+    matchLabels:
+      app: ollama-frontend       # Deployment manages Pods with this label
+
+  template:
+    metadata:
+      labels:
+        app: ollama-frontend     # Pod label (must match selector)
+
+    spec:
+      containers:
+        - name: ollama-frontend  # Container name inside the Pod
+
+          image: burhan503/ollama-agent-frontend:latest
+          # Docker image pulled from DockerHub
+
+          imagePullPolicy: Always
+          # Always pull latest image from registry
+
+          ports:
+            - containerPort: 80
+            # Container listens on port 80 (Nginx serving React)
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+              # Minimum resources required by container
+
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+              # Maximum resources container can use

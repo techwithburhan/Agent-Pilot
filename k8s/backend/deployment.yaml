@@ -1,2 +1,66 @@
-kind: Deployement
-apiVersion: apps/v1
+apiVersion: apps/v1               # Kubernetes API version for Deployment
+kind: Deployment                  # Resource type → manages Pods
+
+metadata:
+  name: ollama-backend            # Name of the Deployment
+  namespace: ollama-agent         # Namespace where it will run
+  labels:
+    app: ollama-backend           # Label used for identification
+
+spec:
+  replicas: 1                     # Number of Pods to run (scaling)
+
+  selector:
+    matchLabels:
+      app: ollama-backend         # Deployment manages Pods with this label
+
+  template:
+    metadata:
+      labels:
+        app: ollama-backend       # Pod label (must match selector)
+
+    spec:
+      containers:
+        - name: ollama-backend    # Container name inside the Pod
+
+          image: burhan503/ollama-agent-backend:latest
+          # Backend Docker image from DockerHub
+
+          imagePullPolicy: Always
+          # Always pull latest image from registry
+
+          ports:
+            - containerPort: 5005
+            # Backend runs on port 5005 (Node.js API)
+
+          env:
+            - name: PORT
+              value: "5005"
+              # Backend application port
+
+            - name: MONGO_URI
+              value: "mongodb://mongodb:27017/ollama-agent"
+              # MongoDB service connection inside Kubernetes
+
+            - name: JWT_SECRET
+              value: "your_jwt_secret_here"
+              # Secret key for authentication (use Secret in production)
+
+            - name: OLLAMA_API
+              value: "http://host.docker.internal:11434/api"
+              # Ollama API endpoint (running on host machine)
+
+            - name: OLLAMA_MODEL
+              value: "llama2"
+              # Default LLM model
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+              # Minimum resources required
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+              # Maximum resources allowed
