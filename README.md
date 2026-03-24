@@ -602,7 +602,7 @@ docker-compose down
 
 ### 🐳 Step 1: Enter MongoDB Container
 ```bash
-docker exec -it ollama-mongodb mongosh
+docker exec -it ollama-mongodb mongosh -u admin -p burhan503 --authenticationDatabase admin
 ```
 ### 🗄️ Step 2: Show Databases
 ```bash
@@ -623,6 +623,9 @@ use ollama-agent
 ```bash
 show collections
 ```
+### Results 
+<img width="2526" height="1174" alt="image" src="https://github.com/user-attachments/assets/23be66ca-5382-481f-a4b2-aa34c562478d" />
+
 ### ⚡ One-Line Quick Check (Direct)
 ```bash
 docker exec -it ollama-mongodb mongosh --eval "use('ollama-agent'); show collections;"
