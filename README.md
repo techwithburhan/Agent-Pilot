@@ -417,19 +417,25 @@ In this project:
 
 > “In my Agent-Pilot project, I used Docker to containerize both the frontend and backend services. This ensured consistent environments across development and production, eliminated dependency issues, and simplified deployment. I built and pushed Docker images to DockerHub, making the application portable and scalable for cloud platforms like AWS and Kubernetes.”
 
-## 🎨 Frontend Dockerfile (React + Nginx)
+## 🎨 Frontend & Backend Docker Setup (React + Node)
 
-This project uses a **multi-stage Docker build** to efficiently build and serve the React frontend application.
+This project uses a **multi-stage Docker build**:
+- 🏗️ Build applications using Node.js  
+- 🚀 Serve frontend using Nginx  
+- ⚡ Lightweight, fast, and production-ready  
 
 ---
-## 🎨 Frontend Dockerfile (React + Nginx)
-Uses a **multi-stage build**:
-- 🏗️ Build React app using Node.js  
-- 🚀 Serve optimized files using Nginx
 
-## 👉 Final image is lightweight, fast, and production-ready.
+## 🔐 Docker Login
 
-### 📁 Go to Frontend 
+```bash
+docker login -u burhan503
+
+```
+
+## 🎨 Frontend Setup
+
+### 📁 Go to Frontend
 ```bash
 cd frontend
 ```
@@ -437,27 +443,35 @@ cd frontend
 ```bash
 docker build -t burhan503/ollama-agent-frontend:latest .
 ```
+### ▶️ Run Container
+```bash
+docker run -d -p 3000:80 --name frontend burhan503/ollama-agent-frontend
+- 👉 Open: http://localhost:3000
+```
+### 🔼 Push Image
+```bash
+docker push burhan503/ollama-agent-frontend:latest
+```
 
-### Please login You Docker-Hub on You Local System 
+## ⚙️ Backend Setup
 
+### 📁 Go to Backend
 ```bash
-Personal access tokens
+cd backend
 ```
+### 🔹 Build Image
 ```bash
-Generate new token
-```
-```bash
-Copy Paster you User name & Password like
-```
-```bash
-docker login -u burhan503
+docker build -t burhan503/ollama-agent-backend:latest .
 ```
 ### ▶️ Run Container
 ```bash
-docker push burhan503/ollama-agent-backend:latest
+docker run -d -p 3000:80 --name frontend burhan503/ollama-agent-frontend
+- 👉 Open: http://localhost:3000
 ```
-
-
+### 🔼 Push Image
+```bash
+docker push burhan503/ollama-agent-frontend:latest
+```
 ---
 
 ## ☸️ Kubernetes — Coming Soon
