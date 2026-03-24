@@ -904,6 +904,7 @@ kubectl cluster-info --context kind-ollama-agent
 ```bash
 kubectl get nodes
 ```
+<img width="1239" height="626" alt="image" src="https://github.com/user-attachments/assets/ecb4680f-b5f5-47cd-81d6-c08b9bd915f9" />
 
 
 
