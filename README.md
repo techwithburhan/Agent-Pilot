@@ -422,64 +422,20 @@ In this project:
 This project uses a **multi-stage Docker build** to efficiently build and serve the React frontend application.
 
 ---
+## 🎨 Frontend Dockerfile (React + Nginx)
+Uses a **multi-stage build**:
+- 🏗️ Build React app using Node.js  
+- 🚀 Serve optimized files using Nginx
 
-## ⚙️ Dockerfile Overview
+## 👉 Final image is lightweight, fast, and production-ready.
 
-The frontend Dockerfile is divided into **2 stages**:
-
-### 🏗️ Stage 1: Builder (React Build)
-
-- Uses `node:18-alpine` (lightweight Node.js image)
-- Installs dependencies using `npm install`
-- Builds the React app using `npm run build`
-- Output: Optimized static files inside `/app/build`
-
-👉 This stage is only used for building and is **not included in the final image**.
-
----
-
-### 🚀 Stage 2: Production (Nginx Server)
-
-- Uses `nginx:alpine` (lightweight web server)
-- Copies built files from Stage 1
-- Serves the React app using Nginx
-- Custom `nginx.conf` is used for proper React routing
-
----
-
-## 📁 File Type Used
-
-- **Dockerfile** → Used to define container build steps  
-- **nginx.conf** → Custom configuration for serving React app  
-- **package.json** → Dependency management for React  
-
----
-
-## 🔄 How It Works
-
-1. React app is built inside the container  
-2. Static files are generated (`/build` folder)  
-3. These files are served using Nginx  
-4. Final image contains only optimized files (no Node.js)
-
----
-
-## 🧠 Key Benefits
-
-- 🚀 Faster builds using Docker layer caching  
-- 📦 Smaller image size (~25MB vs ~400MB) :contentReference[oaicite:0]{index=0}  
-- 🔒 Secure (no unnecessary dependencies in production)  
-- ⚡ High performance using Nginx  
-
----
-
-## 🛠️ Build & Run Commands
+### 📁 Go to Frontend 
 ```bash
-cd frontend 
+cd frontend
 ```
-### 🔹 Build Docker Image
-```bash
-docker build -t burhan503/ollama-agent-frontend:latest .
+### 🔹 Build Image
+
+
 ---
 
 ## ☸️ Kubernetes — Coming Soon
