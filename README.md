@@ -473,7 +473,16 @@ docker run -d -p 5005:5005 --env-file .env --name backend burhan503/ollama-agent
 docker push burhan503/ollama-agent-backend:latest
 
 ```
-###🎯 Summary
+### 🔍 Verify Images
+```bash
+docker images | grep burhan503
+```
+### Expected output 👇
+```bash
+burhan503/ollama-agent-backend     latest
+burhan503/ollama-agent-frontend    latest
+```
+### 🎯 Summary
 - Frontend → React + Nginx (Port 3000)
 - Backend → Node.js API (Port 5005)
 - Docker images are available on DockerHub under burhan503/*
