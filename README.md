@@ -906,7 +906,7 @@ kubectl get nodes
 ```
 <img width="1239" height="626" alt="image" src="https://github.com/user-attachments/assets/ecb4680f-b5f5-47cd-81d6-c08b9bd915f9" />
 
-# 🚀 Ollama Agent — Kubernetes Deployment Guide
+# 🚀 Ollama Agent — Kubernetes Deployment Guide Automated Create Resources but shell Scripts files 
 
 This document covers **installation, deployment, access, and troubleshooting** for the Ollama Agent project on Kubernetes.
 
@@ -1143,6 +1143,252 @@ kubectl get pvc -A
 * Access via ingress (localhost:8080)
 * Debug using `kubectl describe` and `logs`
 * Delete safely using `delete-all.sh`
+
+---
+
+# 🚀 Ollama Agent — Manual Kubernetes Deployment Guide (Fixed)
+
+This guide explains how to deploy the application **step-by-step manually** with proper verification and troubleshooting.
+
+---
+
+# 📌 Prerequisites
+
+* Kubernetes (Docker Desktop / Minikube / EKS)
+* kubectl installed
+* Docker installed
+
+---
+
+# 🧱 Step 0: Verify Cluster
+
+```bash
+kubectl get nodes
+```
+
+✅ Node must be `Ready`
+
+---
+
+# 🌐 Step 1: Install Ingress Controller (IMPORTANT)
+
+👉 Without this, ingress will NOT work
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+```
+
+### Verify:
+
+```bash
+kubectl get pods -n ingress-nginx
+```
+
+✅ Wait until:
+
+```
+1/1 Running
+```
+
+---
+
+# 🧱 Step 2: Cluster Setup
+
+```bash
+kubectl apply -f k8s/cluster/namespace.yaml
+kubectl apply -f k8s/cluster/storageclass.yaml
+```
+
+### Verify:
+
+```bash
+kubectl get ns
+kubectl get storageclass
+```
+
+---
+
+# 🍃 Step 3: MongoDB (FIRST)
+
+```bash
+kubectl apply -f k8s/mongodb/
+```
+
+---
+
+### Verify:
+
+```bash
+kubectl get pods -n ollama-agent
+kubectl get pvc -n ollama-agent
+```
+
+✅ Expected:
+
+* Pod → Running
+* PVC → Bound
+
+---
+
+### Troubleshooting MongoDB
+
+```bash
+kubectl describe pod ollama-mongodb-0 -n ollama-agent
+kubectl get pvc -n ollama-agent
+kubectl logs ollama-mongodb-0 -n ollama-agent
+```
+
+---
+
+# ⚙️ Step 4: Backend
+
+### Apply config first:
+
+```bash
+kubectl apply -f k8s/backend/secret.yaml
+kubectl apply -f k8s/backend/configmap.yaml
+```
+
+---
+
+### Deploy backend:
+
+```bash
+kubectl apply -f k8s/backend/deployment.yaml
+kubectl apply -f k8s/backend/service.yaml
+kubectl apply -f k8s/backend/hpa.yaml
+```
+
+---
+
+### Verify:
+
+```bash
+kubectl get pods -n ollama-agent
+kubectl get svc -n ollama-agent
+```
+
+---
+
+### Troubleshooting:
+
+```bash
+kubectl describe pod <backend-pod> -n ollama-agent
+kubectl logs <backend-pod> -n ollama-agent
+```
+
+---
+
+# 🎨 Step 5: Frontend
+
+```bash
+kubectl apply -f k8s/frontend/
+```
+
+---
+
+### Verify:
+
+```bash
+kubectl get pods -n ollama-agent
+kubectl get svc -n ollama-agent
+```
+
+---
+
+### Troubleshooting:
+
+```bash
+kubectl logs <frontend-pod> -n ollama-agent
+```
+
+---
+
+# 🌐 Step 6: Apply Ingress (FIXED)
+
+```bash
+kubectl apply -f k8s/cluster/ingress.yaml
+```
+
+---
+
+### Verify:
+
+```bash
+kubectl get ingress -n ollama-agent
+```
+
+---
+
+### 🔴 IMPORTANT CHECK
+
+Ensure your ingress has:
+
+```
+ingressClassName: nginx
+```
+
+---
+
+### Troubleshooting Ingress
+
+```bash
+kubectl describe ingress -n ollama-agent
+kubectl get pods -n ingress-nginx
+```
+
+---
+
+# 🌍 Step 7: Access Application
+
+### Port forward ingress:
+
+```bash
+kubectl port-forward -n ingress-nginx service/ingress-nginx-controller 8080:80
+```
+
+---
+
+### Open:
+
+* Frontend → http://localhost:8080
+* Backend → http://localhost:8080/api
+
+---
+
+# 🧠 Master Debug Commands
+
+```bash
+kubectl get all -n ollama-agent
+kubectl describe pod <pod-name> -n ollama-agent
+kubectl logs <pod-name> -n ollama-agent
+kubectl get events -n ollama-agent
+```
+
+---
+
+# 🎯 Correct Deployment Order
+
+```
+1. Ingress Controller
+2. Namespace + Storage
+3. MongoDB
+4. Backend
+5. Frontend
+6. Ingress
+```
+
+---
+
+# ✅ Final Notes
+
+* Always install ingress controller first
+* Always deploy database before backend
+* Always verify each step before moving ahead
+* Always check logs when something fails
+
+---
+
 
 ---
 
