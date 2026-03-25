@@ -1,0 +1,50 @@
+apiVersion: autoscaling/v2      # Kubernetes version for autoscaling
+kind: HorizontalPodAutoscaler   # Auto-scaling for the backend pods
+
+metadata:
+  name: ollama-backend-hpa      # Name of this autoscaler
+  namespace: ollama-agent
+
+spec:
+  # Which deployment to scale
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ollama-backend        # Must match the name in backend/deployment.yaml
+
+  minReplicas: 2                # Minimum 2 pods always running (high availability)
+  maxReplicas: 10               # Maximum 10 pods (more than frontend — backend is heavier)
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60  # Scale up when CPU goes above 60%
+                                  # Lower than frontend (60 vs 70) because
+                                  # AI/LLM calls are very CPU intensive
+                                  # We want to scale earlier to avoid slowness
+
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75  # Scale up when memory goes above 75%
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 15   # Scale up quickly (15s) — AI traffic can spike fast
+      policies:
+        - type: Pods
+          value: 3                     # Add up to 3 pods at once (backend needs fast scaling)
+          periodSeconds: 60
+
+    scaleDown:
+      stabilizationWindowSeconds: 600  # Wait 10 minutes before removing pods
+                                       # AI chats are long — we don't want to kill active pods
+      policies:
+        - type: Pods
+          value: 1                     # Remove only 1 pod at a time (very careful scale down)
+          periodSeconds: 180

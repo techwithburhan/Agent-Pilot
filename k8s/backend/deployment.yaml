@@ -1,66 +1,116 @@
-apiVersion: apps/v1               # Kubernetes API version for Deployment
-kind: Deployment                  # Resource type → manages Pods
+apiVersion: apps/v1     # Kubernetes version for Deployments
+kind: Deployment        # We are creating a Deployment
 
 metadata:
-  name: ollama-backend            # Name of the Deployment
-  namespace: ollama-agent         # Namespace where it will run
+  name: ollama-backend            # Name of this deployment
+  namespace: ollama-agent         # Our namespace
   labels:
-    app: ollama-backend           # Label used for identification
+    app: ollama-backend
 
 spec:
-  replicas: 1                     # Number of Pods to run (scaling)
+  replicas: 2                     # Run 2 copies of the backend
+                                  # If 1 crashes, the other keeps serving requests
+
+  strategy:
+    type: RollingUpdate           # Update one pod at a time (no downtime)
+    rollingUpdate:
+      maxUnavailable: 1           # Max 1 pod offline during update
+      maxSurge: 1                 # Can create 1 extra pod during update
 
   selector:
     matchLabels:
-      app: ollama-backend         # Deployment manages Pods with this label
+      app: ollama-backend         # This deployment manages pods with this label
 
-  template:
+  template:                       # Blueprint for each pod
     metadata:
       labels:
-        app: ollama-backend       # Pod label (must match selector)
+        app: ollama-backend       # Label given to every pod
 
     spec:
+      terminationGracePeriodSeconds: 60
+                                  # Give the pod 60 seconds to finish active requests
+                                  # before Kubernetes force-stops it
+                                  # Important for SSE streaming — don't cut off live chats
+
+      # Wait for MongoDB to be ready before starting the backend
+      # Without this, backend crashes on startup because DB isn't available yet
+      initContainers:
+        - name: wait-for-mongodb
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z ollama-mongodb-headless 27017; do
+                echo "Waiting for MongoDB...";
+                sleep 5;
+              done
+
       containers:
-        - name: ollama-backend    # Container name inside the Pod
-
-          image: burhan503/ollama-agent-backend:latest
-          # Backend Docker image from DockerHub
-
+        - name: ollama-backend
+          image: burhan503/ollama-agent-backend:latest   # Your DockerHub image
           imagePullPolicy: Always
-          # Always pull latest image from registry
 
           ports:
-            - containerPort: 5005
-            # Backend runs on port 5005 (Node.js API)
+            - containerPort: 5005   # Express.js runs on port 5005
 
+          # Load all settings from the ConfigMap as environment variables
+          # Every key in the ConfigMap becomes an env var in the container
+          envFrom:
+            - configMapRef:
+                name: ollama-backend-config   # Our ConfigMap name
+
+          # Load sensitive values from the Secret individually
+          # We override MONGO_URI and JWT_SECRET from the Secret
+          # (Secret is more secure than ConfigMap for passwords)
           env:
-            - name: PORT
-              value: "5005"
-              # Backend application port
-
             - name: MONGO_URI
-              value: "mongodb://mongodb:27017/ollama-agent"
-              # MongoDB service connection inside Kubernetes
+              valueFrom:
+                secretKeyRef:
+                  name: ollama-backend-secret   # Our Secret name
+                  key: MONGO_URI                # The key inside the Secret
 
             - name: JWT_SECRET
-              value: "your_jwt_secret_here"
-              # Secret key for authentication (use Secret in production)
+              valueFrom:
+                secretKeyRef:
+                  name: ollama-backend-secret
+                  key: JWT_SECRET
 
-            - name: OLLAMA_API
-              value: "http://host.docker.internal:11434/api"
-              # Ollama API endpoint (running on host machine)
+          # Health check — "Is the backend alive?"
+          # If this fails 3 times in a row → Kubernetes restarts the pod
+          livenessProbe:
+            httpGet:
+              path: /api/health     # Add this route in your Express app:
+                                    # app.get('/api/health', (req, res) => res.send('ok'))
+              port: 5005
+            initialDelaySeconds: 30  # Wait 30s before first check (Node.js startup time)
+            periodSeconds: 30
+            failureThreshold: 3
 
-            - name: OLLAMA_MODEL
-              value: "llama2"
-              # Default LLM model
+          # Readiness check — "Is this pod ready to receive traffic?"
+          # Pod won't get traffic until this passes
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5005
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 3
 
+          # Resource limits
           resources:
             requests:
-              cpu: "200m"
-              memory: "256Mi"
-              # Minimum resources required
-
+              cpu: "200m"           # Minimum: 0.2 CPU core
+              memory: "256Mi"       # Minimum: 256 MB RAM
             limits:
-              cpu: "500m"
-              memory: "512Mi"
-              # Maximum resources allowed
+              cpu: "500m"           # Maximum: 0.5 CPU core
+              memory: "512Mi"       # Maximum: 512 MB RAM
+
+          # Temporary folder for Node.js to write files
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir: {}              # emptyDir = empty folder, wiped when pod restarts

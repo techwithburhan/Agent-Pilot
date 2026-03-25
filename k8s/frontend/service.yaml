@@ -1,0 +1,28 @@
+apiVersion: v1          # Kubernetes version
+kind: Service           # We are creating a Service
+                        # Service = a stable address for our pods
+                        # Pods get a random IP every time they restart
+                        # Service gives them a fixed name that never changes
+
+metadata:
+  name: ollama-frontend-service   # This is the name other things use to reach us
+                                  # Used in: Ingress (ingress.yaml)
+  namespace: ollama-agent
+
+  labels:
+    app: ollama-frontend
+
+spec:
+  type: ClusterIP                 # ClusterIP = only reachable inside the cluster
+                                  # The Ingress handles outside traffic
+                                  # We don't expose the frontend directly
+
+  selector:
+    app: ollama-frontend          # Send traffic to pods with this label
+                                  # Must match the label in deployment.yaml
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80                    # The port this Service listens on
+      targetPort: 80              # The port inside the pod (must match containerPort)

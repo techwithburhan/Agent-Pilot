@@ -1,0 +1,51 @@
+apiVersion: v1          # Kubernetes version
+kind: ConfigMap         # We are creating a ConfigMap
+                        # This stores a JavaScript file that MongoDB runs
+                        # automatically the FIRST time it starts
+                        # It creates our collections and indexes
+
+metadata:
+  name: ollama-mongodb-init       # Name of this ConfigMap
+  namespace: ollama-agent         # Our namespace
+  labels:
+    app: ollama-mongodb
+
+data:
+  # This file is automatically run by MongoDB on first startup
+  # It creates:
+  #   - users collection (stores user accounts)
+  #   - chats collection (stores chat history)
+  #   - indexes (makes queries fast)
+
+  mongo-init.js: |
+    // Switch to our database (creates it if it doesn't exist)
+    db = db.getSiblingDB("ollama-agent");
+
+    print("Setting up ollama-agent database...");
+
+    // ── Create users collection ──────────────────────────────────────────
+    db.createCollection("users");
+    print("Created: users collection");
+
+    // ── Create chats collection ──────────────────────────────────────────
+    db.createCollection("chats");
+    print("Created: chats collection");
+
+    // ── Create indexes ───────────────────────────────────────────────────
+    // Indexes make database queries much faster
+    // Without indexes, MongoDB has to scan every document to find a match
+
+    // email must be unique — no two users can have the same email
+    db.users.createIndex({ email: 1 }, { unique: true });
+    print("Created: unique index on users.email");
+
+    // username must be unique — no two users can have the same username
+    db.users.createIndex({ username: 1 }, { unique: true });
+    print("Created: unique index on users.username");
+
+    // When loading chats for a user, sort by newest first
+    // This is the most common query: "get all chats for user X"
+    db.chats.createIndex({ userId: 1, createdAt: -1 });
+    print("Created: index on chats.userId + createdAt");
+
+    print("Database setup complete!");

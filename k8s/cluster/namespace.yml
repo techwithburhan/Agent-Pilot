@@ -1,6 +1,8 @@
-apiVersion: v1
-kind: Namespace
+apiVersion: v1          # Kubernetes version
+kind: Namespace         # We are creating a Namespace
+
 metadata:
-  name: ollama-agent
+  name: ollama-agent    # This is the name of our "workspace" in Kubernetes
+                        # All our resources (frontend, backend, mongodb) will live here
   labels:
-    app: ollama-agent
+    app: ollama-agent   # Just a tag so we can find this namespace easily

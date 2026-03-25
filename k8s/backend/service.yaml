@@ -1,0 +1,32 @@
+apiVersion: v1          # Kubernetes version
+kind: Service           # We are creating a Service
+                        # Service = stable address for our backend pods
+
+metadata:
+  name: ollama-backend-service    # Name used by Ingress and frontend nginx.conf
+                                  # to reach the backend
+  namespace: ollama-agent
+  labels:
+    app: ollama-backend
+
+spec:
+  type: ClusterIP                 # Only reachable inside the cluster (not from internet)
+                                  # Ingress handles routing from the internet → here
+
+  selector:
+    app: ollama-backend           # Send traffic to pods with this label
+
+  # Important for streaming (SSE):
+  # sessionAffinity = ClientIP means the same user always goes to the same pod
+  # This is important so a streaming chat response doesn't get cut off
+  # by being routed to a different pod mid-stream
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600        # Keep the same user on the same pod for 1 hour
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5005                  # Port this service listens on
+      targetPort: 5005            # Port inside the pod (must match containerPort)

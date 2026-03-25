@@ -1,45 +1,95 @@
-apiVersion: apps/v1               # Kubernetes API version for Deployment
-kind: Deployment                 # Resource type → manages Pods
+apiVersion: apps/v1     # Kubernetes version for Deployments
+kind: Deployment        # We are creating a Deployment
+                        # Deployment = tells Kubernetes to run our app
+                        # and keep it running (restart if it crashes)
 
 metadata:
-  name: ollama-frontend          # Name of the Deployment
-  namespace: ollama-agent        # Namespace where it will run
+  name: ollama-frontend           # Name of this deployment
+  namespace: ollama-agent         # Our namespace
   labels:
-    app: ollama-frontend         # Label used for identification
+    app: ollama-frontend          # Tag for this deployment
 
 spec:
-  replicas: 1                    # Number of Pods to run (scaling)
+  replicas: 2                     # Run 2 copies of the frontend
+                                  # If 1 crashes, the other still serves users
+
+  # How to update the app with zero downtime
+  strategy:
+    type: RollingUpdate           # Update one pod at a time (not all at once)
+    rollingUpdate:
+      maxUnavailable: 1           # At most 1 pod can be offline during update
+      maxSurge: 1                 # Can create 1 extra pod during update
 
   selector:
     matchLabels:
-      app: ollama-frontend       # Deployment manages Pods with this label
+      app: ollama-frontend        # This deployment manages pods with this label
 
-  template:
+  template:                       # This is the "blueprint" for each pod
     metadata:
       labels:
-        app: ollama-frontend     # Pod label (must match selector)
+        app: ollama-frontend      # Label given to every pod (must match selector above)
 
     spec:
+      # Wait for backend to be ready before starting frontend
+      # Without this, frontend might start before the API is available
+      initContainers:
+        - name: wait-for-backend
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z ollama-backend-service 5005; do
+                echo "Waiting for backend...";
+                sleep 3;
+              done
+
       containers:
-        - name: ollama-frontend  # Container name inside the Pod
-
-          image: burhan503/ollama-agent-frontend:latest
-          # Docker image pulled from DockerHub
-
-          imagePullPolicy: Always
-          # Always pull latest image from registry
+        - name: ollama-frontend
+          image: burhan503/ollama-agent-frontend:latest   # Your DockerHub image
+          imagePullPolicy: Always   # Always pull the latest image when pod starts
 
           ports:
-            - containerPort: 80
-            # Container listens on port 80 (Nginx serving React)
+            - containerPort: 80   # Nginx runs on port 80 inside the container
 
+          # Mount our custom nginx.conf from the ConfigMap
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf  # Only mount this one file from the ConfigMap
+
+          # Liveness probe = "Is this pod alive?"
+          # If this fails 3 times → Kubernetes restarts the pod
+          livenessProbe:
+            httpGet:
+              path: /healthz       # The health check URL we defined in nginx.conf
+              port: 80
+            initialDelaySeconds: 15   # Wait 15s before first check (startup time)
+            periodSeconds: 20         # Check every 20 seconds
+
+          # Readiness probe = "Is this pod ready to receive traffic?"
+          # If this fails → Kubernetes stops sending traffic to this pod
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          # Resource limits — how much CPU and Memory this container can use
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
-              # Minimum resources required by container
-
+              cpu: "100m"         # Minimum: 0.1 CPU core  (m = millicores)
+              memory: "128Mi"     # Minimum: 128 MB RAM
             limits:
-              cpu: "300m"
-              memory: "256Mi"
-              # Maximum resources container can use
+              cpu: "300m"         # Maximum: 0.3 CPU core
+              memory: "256Mi"     # Maximum: 256 MB RAM
+
+      # Connect the volume to the ConfigMap we created
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: ollama-frontend-config   # Name of our ConfigMap
+            items:
+              - key: nginx.conf
+                path: nginx.conf
