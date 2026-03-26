@@ -695,6 +695,12 @@ ollama-agent/
     ├── deployment.yaml      ✅ 2 replicas + initContainer
     ├── service.yaml         ✅ LoadBalancer + 443 HTTPS
     └── hpa.yaml             ✅ 2-8 pods auto-scale
+ollama/
+    ├── pvc.yaml                      ✅ 30GB storage (models persist hongi)
+    ├── configmap.yaml                ✅ Ollama settings
+    ├── deployment.yaml               ✅ Ollama pod + model auto-pull
+    ├── service.yaml                  ✅ ClusterIP (pods se access)
+    ├── nodeport.yaml                 ✅ NodePort (bahar se debug)
 
 ```
 ## 🤔 The Problem Without Kubernetes
