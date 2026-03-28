@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ollama-config
-  namespace: ollama-agent
-data:
-  OLLAMA_HOST: "0.0.0.0"
-  OLLAMA_MODELS: "/root/.ollama/models"
-  OLLAMA_KEEP_ALIVE: "24h"
