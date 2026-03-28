@@ -1,0 +1,23 @@
+# kind cluster config — pre-maps host ports so NodePort works directly
+# Usage:  kind create cluster --name ollama-agent --config kind-cluster.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: ollama-agent
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 80       # Ingress HTTP
+        hostPort: 80
+        protocol: TCP
+      - containerPort: 443      # Ingress HTTPS
+        hostPort: 443
+        protocol: TCP
+      - containerPort: 31434    # Ollama NodePort
+        hostPort: 31434
+        protocol: TCP
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"

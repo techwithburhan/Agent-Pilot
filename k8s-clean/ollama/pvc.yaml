@@ -1,0 +1,13 @@
+# kind: local-path provisioner auto-creates the PV — only PVC needed
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-pvc
+  namespace: ollama-agent
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 30Gi
