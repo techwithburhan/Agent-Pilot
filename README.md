@@ -29,6 +29,7 @@
 <br/>
 <img width="1470" height="835" alt="github-ollama-agent2" src="https://github.com/user-attachments/assets/a4cc83d7-7c2b-42ef-a4d9-fe204d732c6d" />
 <br/>
+
 ## 📖 What Is This Project?
 
 **Ollama Agent** is a production-grade, fully offline AI chat application that runs powerful Large Language Models directly on your own machine — zero internet required, zero API costs, and complete data privacy.
