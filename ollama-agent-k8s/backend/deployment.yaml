@@ -46,7 +46,7 @@ spec:
               echo "Ollama is ready!"
       containers:
         - name: ollama-backend
-          image: burhan503/ollama-agent-backend:latest
+          image: burhan503/ollama-agent-backend:v1009
           imagePullPolicy: Always
           ports:
             - containerPort: 5005
