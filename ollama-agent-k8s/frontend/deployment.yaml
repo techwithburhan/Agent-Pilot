@@ -33,7 +33,7 @@ spec:
               done
       containers:
         - name: ollama-frontend
-          image: burhan503/ollama-agent-frontend:latest
+          image: burhan503/ollama-agent-frontend:v1009
           imagePullPolicy: Always
           ports:
             - containerPort: 80
