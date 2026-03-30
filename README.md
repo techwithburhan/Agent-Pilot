@@ -651,8 +651,8 @@ kubectl get ingress -n ollama-agent
 ./port-forward.sh stop     # stop all
 
 # Or individually
-kubectl port-forward svc/ollama-frontend-service 3000:80 -n ollama-agent
-kubectl port-forward svc/ollama-backend-service 5005:5005 -n ollama-agent
+kubectl port-forward svc/ollama-frontend-service 3000:80 -n ollama-agent --address 0.0.0.0
+kubectl port-forward svc/ollama-backend-service 5005:5005 -n ollama-agent --address 0.0.0.0
 kubectl port-forward svc/ollama-service 11434:11434 -n ollama-agent
 kubectl port-forward svc/ollama-mongodb 27017:27017 -n ollama-agent
 
