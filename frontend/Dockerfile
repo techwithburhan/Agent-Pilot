@@ -18,7 +18,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Set the backend URL as build arg so it's baked into the React build
-ARG REACT_APP_API_URL=http://localhost:5005
+ARG REACT_APP_API_URL=
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 
 # Build the production React app
