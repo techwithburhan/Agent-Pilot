@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "my_bucket" {
   bucket = var.aws_s3_bucket
+  force_destroy = true
   tags = {
     Name = var.aws_s3_bucket
   }
@@ -11,7 +12,7 @@ resource "aws_dynamodb_table" "my_dynamodb_table" {
   hash_key     = "LockID"
   attribute {
     name = "LockID"
-    type = "String"
+    type = "S"
   } 
   tags = {
     Name = var.aws_dynamodb_table
